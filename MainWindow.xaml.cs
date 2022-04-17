@@ -74,7 +74,7 @@ namespace WpfApp1
 
             int BtnID = Int32.Parse(x.Name.Split("_" , 2)[1]);
         }
-    }
+    
 
         private void Button_Loaded(object sender, RoutedEventArgs e)
         {
