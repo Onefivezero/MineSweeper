@@ -30,7 +30,7 @@
                     <Button Click="Button_Click" Loaded="Button_Loaded">
                         <Button.Content>
                             <Grid>
-                                <TextBlock Text="{Binding Mine}" Visibility="Hidden"/>
+                                <TextBlock Text="{Binding Mine}" Visibility="{Binding Visible}"/>
                             </Grid>
                         </Button.Content>
                     </Button>

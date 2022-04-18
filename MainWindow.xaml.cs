@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace WpfApp1
 {
@@ -23,7 +25,7 @@ namespace WpfApp1
         public const int SIZE_OF_FIELD = 10;
         private int IDX = 0;
 
-        private List<MineSweepButton>? itemList;
+        private ObservableCollection<MineSweepButton>? itemList;
 
         public MainWindow()
         {
@@ -34,13 +36,14 @@ namespace WpfApp1
 
         private void Reset_Game()
         {
+            IDX = 0;
             Random random = new Random();
 
-            itemList = new List<MineSweepButton>();
+            itemList = new ObservableCollection<MineSweepButton>();
 
             for (int i = 0; i < Math.Pow(SIZE_OF_FIELD, 2); i++)
             {
-                itemList.Add(new MineSweepButton() { Mine = random.Next(100) > 90 ? "x" : "0" });
+                itemList.Add(new MineSweepButton() { Mine = random.Next(100) > 80 ? "x" : "0", Visible = Visibility.Hidden });
             }
 
             for (int i = 0; i < itemList.Count; i++)
@@ -67,14 +70,53 @@ namespace WpfApp1
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Button x = (Button)sender;
-            Grid x_grid = (Grid)x.Content;
-            TextBlock txtblock = (TextBlock)x_grid.Children[0];
-            txtblock.Visibility = Visibility.Visible;
 
-            int BtnID = Int32.Parse(x.Name.Split("_" , 2)[1]);
+            Button x = (Button)sender;
+            //Grid x_grid = (Grid)x.Content;
+            //TextBlock txtblock = (TextBlock)x_grid.Children[0];
+
+            int BtnID = Int32.Parse(x.Name.Split("_", 2)[1]);
+            Click_On_Mine(BtnID);
+
+            MainItemControl.ItemsSource = itemList;
         }
-    
+
+        public void Click_On_Mine(int BtnID)
+        {
+            if (itemList == null) { return; }
+
+            MineSweepButton MineItem = itemList[BtnID];
+            MineItem.Visible = Visibility.Visible;
+
+            if (MineItem.Mine == "x") { GameOver(); return; }
+
+            System.Diagnostics.Debug.WriteLine(BtnID.ToString());
+
+            if (MineItem.Mine == "0")
+            {
+                for(int i = -1; i <= 1; i++)
+                {
+                    for (int k = -1; k <= 1; k++) 
+                    {
+                        int row = BtnID / SIZE_OF_FIELD, column = BtnID % SIZE_OF_FIELD;
+                        int index = (row + i) * SIZE_OF_FIELD + k + column;
+
+                        if ((i != 0 || k != 0)
+                            && row + i >= 0 && column + k >= 0 && column + k < SIZE_OF_FIELD && row + i < SIZE_OF_FIELD
+                            && itemList[index].Visible == Visibility.Hidden
+                            )
+                        { 
+                            Click_On_Mine(index);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void GameOver()
+        {
+            MessageBox.Show("Game Over!");
+        }
 
         private void Button_Loaded(object sender, RoutedEventArgs e)
         {
@@ -89,10 +131,40 @@ namespace WpfApp1
         {
             Reset_Game();
         }
-    }
-
-    public class MineSweepButton
-    {
-        public string? Mine { get; set; }
+        public class MineSweepButton : INotifyPropertyChanged
+        {
+            private string? mine;
+            public string? Mine
+            {
+                get { return mine; }
+                set
+                {
+                    if(this.mine != value) 
+                    {
+                        this.mine = value;
+                        this.NotifyPropertyChanged("Mine");
+                    }
+                }
+            }
+            private Visibility visible;
+            public Visibility Visible
+            {
+                get { return visible; }
+                set
+                {
+                    if (this.visible != value)
+                    {
+                        this.visible = value;
+                        this.NotifyPropertyChanged("Visible");
+                    }
+                }
+            }
+            public event PropertyChangedEventHandler PropertyChanged;
+            public void NotifyPropertyChanged(string propName)
+            {
+                if (this.PropertyChanged != null)
+                    this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
+        }
     }
 }
