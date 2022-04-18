@@ -27,7 +27,7 @@
 
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Button Click="Button_Click" Loaded="Button_Loaded">
+                    <Button Click="Button_Click" Loaded="Button_Loaded" IsEnabled="{Binding Enabled}">
                         <Button.Content>
                             <Grid>
                                 <TextBlock Text="{Binding Mine}" Visibility="{Binding Visible}"/>

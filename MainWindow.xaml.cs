@@ -24,6 +24,7 @@ namespace WpfApp1
     {
         public const int SIZE_OF_FIELD = 10;
         private int IDX = 0;
+        private int MINE_PERCENTAGE = 10; //Percentage of mine to empty field ratio
 
         private ObservableCollection<MineSweepButton>? itemList;
 
@@ -43,7 +44,7 @@ namespace WpfApp1
 
             for (int i = 0; i < Math.Pow(SIZE_OF_FIELD, 2); i++)
             {
-                itemList.Add(new MineSweepButton() { Mine = random.Next(100) > 80 ? "x" : "0", Visible = Visibility.Hidden });
+                itemList.Add(new MineSweepButton() { Mine = random.Next(100) < MINE_PERCENTAGE ? "x" : "0", Visible = Visibility.Hidden, Enabled = true});
             }
 
             for (int i = 0; i < itemList.Count; i++)
@@ -72,8 +73,6 @@ namespace WpfApp1
         {
 
             Button x = (Button)sender;
-            //Grid x_grid = (Grid)x.Content;
-            //TextBlock txtblock = (TextBlock)x_grid.Children[0];
 
             int BtnID = Int32.Parse(x.Name.Split("_", 2)[1]);
             Click_On_Mine(BtnID);
@@ -87,10 +86,9 @@ namespace WpfApp1
 
             MineSweepButton MineItem = itemList[BtnID];
             MineItem.Visible = Visibility.Visible;
+            MineItem.Enabled = false;
 
             if (MineItem.Mine == "x") { GameOver(); return; }
-
-            System.Diagnostics.Debug.WriteLine(BtnID.ToString());
 
             if (MineItem.Mine == "0")
             {
@@ -115,6 +113,11 @@ namespace WpfApp1
 
         private void GameOver()
         {
+            foreach(MineSweepButton i in itemList)
+            {
+                i.Visible = Visibility.Visible;
+                i.Enabled = false;
+            }
             MessageBox.Show("Game Over!");
         }
 
@@ -156,6 +159,19 @@ namespace WpfApp1
                     {
                         this.visible = value;
                         this.NotifyPropertyChanged("Visible");
+                    }
+                }
+            }
+            private bool enabled;
+            public bool Enabled
+            {
+                get { return enabled; }
+                set
+                {
+                    if (this.enabled != value)
+                    {
+                        this.enabled = value;
+                        this.NotifyPropertyChanged("Enabled");
                     }
                 }
             }
