@@ -82,9 +82,6 @@ namespace WpfApp1
             int BtnID = Int32.Parse(x.Name.Split("_", 2)[1]);
             Click_On_Mine(BtnID);
 
-            System.Diagnostics.Debug.WriteLine(EMPTY_SQUARE_COUNT.ToString());
-            System.Diagnostics.Debug.WriteLine(REVEALED_SQUARE_COUNT.ToString());
-
             if (REVEALED_SQUARE_COUNT == EMPTY_SQUARE_COUNT)
             {
                 GameWon();
