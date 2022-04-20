@@ -24,7 +24,9 @@ namespace WpfApp1
     {
         public const int SIZE_OF_FIELD = 10;
         private int IDX = 0;
-        private int MINE_PERCENTAGE = 10; //Percentage of mine to empty field ratio
+        private int MINE_PERCENTAGE = 10; //Percentage chance of a square having a mine
+        private int EMPTY_SQUARE_COUNT = 0;//Number of empty squares. Will be needed to check if the player won the game.
+        private int REVEALED_SQUARE_COUNT = 0;//Number of squares that were revealed.
 
         private ObservableCollection<MineSweepButton>? itemList;
 
@@ -37,7 +39,8 @@ namespace WpfApp1
 
         private void Reset_Game()
         {
-            IDX = 0;
+            IDX = 0; EMPTY_SQUARE_COUNT = 0; REVEALED_SQUARE_COUNT = 0;
+
             Random random = new Random();
 
             itemList = new ObservableCollection<MineSweepButton>();
@@ -50,7 +53,9 @@ namespace WpfApp1
             for (int i = 0; i < itemList.Count; i++)
             {
                 if (itemList[i].Mine == "x") continue;
-                int mineCount = 0;
+                
+                EMPTY_SQUARE_COUNT++;
+                int mineProximityCount = 0;//Number of mines neighbouring the current square
                 int row = i % SIZE_OF_FIELD, column = i / SIZE_OF_FIELD;
 
                 for (int x = -1; x < 2; x++)
@@ -59,11 +64,11 @@ namespace WpfApp1
                     {
                         if (row + x >= 0 && row + x < SIZE_OF_FIELD && column + y >= 0 && column + y < SIZE_OF_FIELD && itemList[(row + x) + (column + y) * SIZE_OF_FIELD].Mine == "x")
                         {
-                            mineCount++;
+                            mineProximityCount++;
                         }
                     }
                 }
-                itemList[i].Mine = mineCount.ToString();
+                itemList[i].Mine = mineProximityCount.ToString();
             }
 
             MainItemControl.ItemsSource = itemList;
@@ -77,13 +82,20 @@ namespace WpfApp1
             int BtnID = Int32.Parse(x.Name.Split("_", 2)[1]);
             Click_On_Mine(BtnID);
 
-            MainItemControl.ItemsSource = itemList;
+            System.Diagnostics.Debug.WriteLine(EMPTY_SQUARE_COUNT.ToString());
+            System.Diagnostics.Debug.WriteLine(REVEALED_SQUARE_COUNT.ToString());
+
+            if (REVEALED_SQUARE_COUNT == EMPTY_SQUARE_COUNT)
+            {
+                GameWon();
+            }
         }
 
         public void Click_On_Mine(int BtnID)
         {
             if (itemList == null) { return; }
 
+            REVEALED_SQUARE_COUNT++;
             MineSweepButton MineItem = itemList[BtnID];
             MineItem.Visible = Visibility.Visible;
             MineItem.Enabled = false;
@@ -113,12 +125,28 @@ namespace WpfApp1
 
         private void GameOver()
         {
+            if(itemList == null) { return; }
+
             foreach(MineSweepButton i in itemList)
             {
                 i.Visible = Visibility.Visible;
                 i.Enabled = false;
             }
+
             MessageBox.Show("Game Over!");
+        }
+
+        private void GameWon()
+        {
+            if (itemList == null) { return; }
+
+            foreach (MineSweepButton i in itemList)
+            {
+                i.Visible = Visibility.Visible;
+                i.Enabled = false;
+            }
+
+            MessageBox.Show("You Won!");
         }
 
         private void Button_Loaded(object sender, RoutedEventArgs e)
@@ -175,7 +203,7 @@ namespace WpfApp1
                     }
                 }
             }
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
             public void NotifyPropertyChanged(string propName)
             {
                 if (this.PropertyChanged != null)
